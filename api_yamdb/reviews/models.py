@@ -1,5 +1,4 @@
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils import timezone
@@ -16,52 +15,7 @@ class Role:
     ]
 
 
-class UserManager(BaseUserManager):
-    """Чтобы определить кастомного пользователя определяем свой менеджер."""
-
-    def create_user(
-        self,
-        username,
-        bio,
-        email=None,
-        password=None,
-        role=None,
-    ):
-        user = self.model(
-            username=username,
-            email=self.normalize_email(email)
-        )
-        if role == Role.ADMIN:
-            user.is_superuser = True
-        if role == Role.MODERATOR:
-            user.is_staff = True
-        user.role
-        user.set_password(password)
-        user.bio
-        user.save()
-        return user
-
-    def create_superuser(
-        self,
-        username,
-        email,
-        bio=None,
-        role=None,
-        password=None
-    ):
-        user = self.model(
-            username=username,
-            email=self.normalize_email(email)
-        )
-        user.role
-        user.set_password(password)
-        user.bio
-        user.is_superuser = True
-        user.save()
-        return user
-
-
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractUser):
     """Чтобы определить кастомного пользователя определяем свой менеджер."""
 
     username = models.CharField(
@@ -96,18 +50,31 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=Role.USER,
         verbose_name='Роль'
     )
-    is_superuser = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    is_staff = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
 
-    objects = UserManager()
+    @property
+    def is_admin(self):
+        return self.role == Role.ADMIN
 
-    def __str__(self):
-        return self.username
+    @property
+    def is_moderator(self):
+        return self.role == Role.MODERATOR
+
+    @property
+    def is_user(self):
+        return self.role == Role.USER
 
     class Meta:
         verbose_name = 'Пользователь'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
 
 
 class Category(models.Model):

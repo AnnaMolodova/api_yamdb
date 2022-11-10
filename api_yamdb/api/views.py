@@ -29,14 +29,15 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer
 )
-from api.permissions import (Admin, AuthorAdminReadOnly,
-                             CommentReviewPermission, AdminOrReadOnly)
+from api.permissions import (AuthorAdminReadOnly,
+                             CommentReviewPermission,
+                             AdminOrReadOnly, IsAdminOrSuperuser)
 
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [Admin, ]
+    permission_classes = [IsAdminOrSuperuser, ]
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     search_fields = ('username', )
     lookup_field = 'username'

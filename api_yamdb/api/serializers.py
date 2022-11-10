@@ -41,6 +41,9 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name', 'last_name'
         )
 
+        def __str__(self):
+            return self.username
+
 
 class UserMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)
@@ -110,7 +113,8 @@ class TitleReadSerializer(ModelSerializer):
             'year',
             'rating'
         )
-        read_only_fields = ("name", "year", "description", "genre", "category", 'rating')
+        read_only_fields = ("name", "year", "description",
+                            "genre", "category", 'rating')
 
     def __str__(self):
         return self.name
