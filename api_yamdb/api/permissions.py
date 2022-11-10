@@ -1,6 +1,5 @@
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS, BasePermission
-from reviews.models import Role
 
 
 class CommentReviewPermission(permissions.BasePermission):
@@ -10,25 +9,17 @@ class CommentReviewPermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or obj.author == request.user
-            or request.user.role == Role.ADMIN
-            or request.user.role == Role.MODERATOR
-        )
+        return (request.method in SAFE_METHODS
+                or (request.user.is_authenticated
+                    and request.user.is_admin
+                    or request.user == obj.author
+                    or request.user.is_moderator))
 
 
-class AdminOrReadOnly(BasePermission):
+class AdminUserOrReadOnly(BasePermission):
     def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return True
-        elif (request.user.is_anonymous and request.method != ['POST',
-              'PATCH', 'DELETE']):
-            return True
-        elif request.user.role == Role.ADMIN:
-            return True
-        else:
-            return False
+        return (request.user.is_authenticated and request.user.is_admin
+                or request.method in SAFE_METHODS)
 
 
 class Admin(BasePermission):
@@ -41,6 +32,11 @@ class AuthorAdminReadOnly(BasePermission):
     def has_permission(self, request, view):
         return (request.user.is_authenticated and request.user.is_admin
                 or request.method in SAFE_METHODS)
+
+    def has_object_permission(self, request, view, obj):
+        return (request.method == 'DELETE'
+                and request.user.is_authenticated
+                and request.user.is_admin)
 
 
 class IsAdminOrSuperuser(permissions.BasePermission):

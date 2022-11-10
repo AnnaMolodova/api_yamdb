@@ -31,7 +31,7 @@ from .serializers import (
 )
 from api.permissions import (AuthorAdminReadOnly,
                              CommentReviewPermission,
-                             AdminOrReadOnly, IsAdminOrSuperuser)
+                             IsAdminOrSuperuser, AdminUserOrReadOnly)
 
 
 class UserViewSet(ModelViewSet):
@@ -108,9 +108,9 @@ class CategoryViewSet(CreateModelMixin, ListModelMixin,
                       DestroyModelMixin, GenericViewSet):
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
-    permission_classes = [AdminOrReadOnly, ]
+    permission_classes = [AuthorAdminReadOnly, ]
     filter_backends = (SearchFilter, )
-    search_fields = ('name',)
+    search_fields = ('name', 'slug')
     lookup_field = 'slug'
 
 
@@ -118,7 +118,7 @@ class GenreViewSet(CreateModelMixin, ListModelMixin,
                    DestroyModelMixin, GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [AdminOrReadOnly, ]
+    permission_classes = [AdminUserOrReadOnly, ]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
@@ -129,7 +129,7 @@ class TitleViewSet(ModelViewSet):
         rating=Avg('reviews__score')
     ).all()
     serializer_class = TitleSerializer
-    permission_classes = [AdminOrReadOnly, ]
+    permission_classes = [AdminUserOrReadOnly, ]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 

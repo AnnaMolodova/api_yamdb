@@ -69,15 +69,20 @@ class TokenCodeSerializer(serializers.Serializer):
 
 
 class CategorySerializer(ModelSerializer):
+    id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = ('id', 'name', 'slug')
+
+    def __str__(self):
+        return self.name, self.slug
 
 
 class GenreSerializer(ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        fields = ('id', 'name', 'slug')
 
 
 class TitleSerializer(ModelSerializer):
@@ -94,7 +99,7 @@ class TitleSerializer(ModelSerializer):
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'description',
-                  'genre', 'category', 'rating')
+                  'genre', 'category')
 
 
 class TitleReadSerializer(ModelSerializer):
@@ -129,7 +134,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('title', 'id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, data):
         if self.context['request'].method == 'PATCH':
