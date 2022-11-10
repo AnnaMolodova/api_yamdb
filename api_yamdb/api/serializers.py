@@ -47,8 +47,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
     role = serializers.StringRelatedField(read_only=True)
 
     class Meta:
@@ -79,7 +77,7 @@ class CategorySerializer(ModelSerializer):
 class GenreSerializer(ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('id', 'name', 'slug')
+        fields = ('name', 'slug')
 
 
 class TitleSerializer(ModelSerializer):

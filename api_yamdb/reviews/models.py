@@ -1,7 +1,8 @@
+import datetime
+
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.utils import timezone
 
 
 class Role:
@@ -135,7 +136,10 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         verbose_name='Год',
-        validators=[MaxValueValidator(timezone.now().year)]
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(datetime.datetime.now().year)
+        ]
     )
 
     def __str__(self):
@@ -204,8 +208,8 @@ class Comments(models.Model):
         related_name='comments',
     )
     pub_date = models.DateTimeField(
-        default=timezone.now,
         verbose_name='Дата создания комментария',
+        auto_now_add=True
     )
 
     def __str__(self):

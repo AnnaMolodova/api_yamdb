@@ -3,12 +3,11 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import filters, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from django_filters.rest_framework import DjangoFilterBackend
-from django.conf import settings
 from django.db.models import Avg
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.filters import SearchFilter
@@ -43,23 +42,24 @@ class UserViewSet(ModelViewSet):
     lookup_field = 'username'
 
     @action(
-        detail=False, methods=['GET', 'PATCH'], url_path='me'
+        detail=False, methods=['GET', 'PATCH'], url_path='me',
+        permission_classes=[IsAuthenticated]
     )
     def me(self, request):
-        if request.user.is_anonymous:
-            return Response("Пожалуйста авторизуйтесь",
-                            status=status.HTTP_401_UNAUTHORIZED,)
-        if request.method == "GET":
-            me = get_object_or_404(User, id=request.user.id)
-            serializer = UserMeSerializer(me)
-            return Response(serializer.data)
-        me = get_object_or_404(User, id=request.user.id)
-        serializer = UserMeSerializer(me, data=request.data, partial=True)
-        if serializer.is_valid():
+        serializer = UserMeSerializer(request.user)
+        userself = User.objects.get(username=self.request.user)
+        if request.method == 'PATCH':
+            serializer = UserMeSerializer(
+                userself,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == 'GET':
+            serializer = self.get_serializer(userself)
             return Response(serializer.data)
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -69,7 +69,7 @@ def sign_up(request):
     if serializer.is_valid(raise_exception=True):
         user, _ = User.objects.get_or_create(
             username=serializer.data['username'],
-            email = serializer.validated_data['email'])
+            email=serializer.validated_data['email'])
         user.confirmation_code = default_token_generator.make_token(user)
         send_mail(
             'Ваш код',
@@ -144,11 +144,13 @@ class ReviewViewSet(ModelViewSet):
     permission_classes = [CommentReviewPermission, ]
 
     def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user, title=title)
 
 
