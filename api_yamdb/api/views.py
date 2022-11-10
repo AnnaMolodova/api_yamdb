@@ -43,24 +43,23 @@ class UserViewSet(ModelViewSet):
     lookup_field = 'username'
 
     @action(
-        detail=False, methods=['GET', 'PATCH'], url_path='me',
-        permission_classes=(AuthorAdminReadOnly, )
+        detail=False, methods=['GET', 'PATCH'], url_path='me'
     )
     def me(self, request):
-        serializer = UserMeSerializer(request.user)
-        userself = User.objects.get(username=self.request.user)
-        if request.method == 'PATCH':
-            serializer = UserMeSerializer(
-                userself,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == 'GET':
-            serializer = self.get_serializer(userself)
+        if request.user.is_anonymous:
+            return Response("Пожалуйста авторизуйтесь",
+                            status=status.HTTP_401_UNAUTHORIZED,)
+        if request.method == "GET":
+            me = get_object_or_404(User, id=request.user.id)
+            serializer = UserMeSerializer(me)
             return Response(serializer.data)
+        me = get_object_or_404(User, id=request.user.id)
+        serializer = UserMeSerializer(me, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
