@@ -1,5 +1,4 @@
 import datetime
-
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -19,15 +18,10 @@ class Role:
 class User(AbstractUser):
     """Чтобы определить кастомного пользователя определяем свой менеджер."""
 
-    username = models.CharField(
-        max_length=150,
-        unique=True,
-        verbose_name='Имя'
-    )
     email = models.EmailField(
-        max_length=254,
         unique=True,
-        verbose_name='email'
+        verbose_name='email',
+        blank=False
     )
     password = models.CharField(
         max_length=200,
@@ -106,14 +100,6 @@ class Genre(models.Model):
         verbose_name = 'Жанр'
 
 
-class GenreTitle(models.Model):
-    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
-    title = models.ForeignKey('Title', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.title} {self.genre}'
-
-
 class Title(models.Model):
     name = models.CharField(max_length=256)
     category = models.ForeignKey(
@@ -147,6 +133,14 @@ class Title(models.Model):
 
     class Meta:
         verbose_name = 'Произведение'
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
+    title = models.ForeignKey('Title', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.title} {self.genre}'
 
 
 class Review(models.Model):

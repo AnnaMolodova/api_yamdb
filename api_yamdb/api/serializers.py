@@ -6,8 +6,10 @@ from reviews.models import Category, Comments, Genre, Review, Title, User
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True,
+                                     validators=[UniqueValidator(queryset=User.objects.all()), ])
+    email = serializers.EmailField(required=True,
+                                   validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = User
@@ -28,6 +30,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if value == '':
             raise serializers.ValidationError(
                 'Почта обязательна для заполнения'
+            )
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким email уже существует.'
             )
         return value
 
