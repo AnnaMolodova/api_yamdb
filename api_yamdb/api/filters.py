@@ -1,16 +1,21 @@
 import django_filters
-from reviews.models import Title
+
+from reviews.models import Title, Category, Genre
 
 
 class TitleFilter(django_filters.FilterSet):
-    category = django_filters.CharFilter(
-        field_name='category__slug', lookup_expr='iexact'
+    genre = django_filters.ModelMultipleChoiceFilter(
+        field_name="genre__slug",
+        to_field_name="slug",
+        queryset=Genre.objects.all(),
     )
-    genre = django_filters.CharFilter(
-        field_name='category__slug', lookup_expr='iexact'
+    category = django_filters.ModelMultipleChoiceFilter(
+        field_name="category__slug",
+        to_field_name="slug",
+        queryset=Category.objects.all(),
     )
     name = django_filters.CharFilter(
-        field_name='name', lookup_expr='contains'
+        field_name='name', lookup_expr='icontains'
     )
     year = django_filters.NumberFilter(
         field_name='year', lookup_expr='year'

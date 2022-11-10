@@ -41,8 +41,14 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-
-    def create_superuser(self, username, email, bio=None, role=None, password=None):
+    def create_superuser(
+        self,
+        username,
+        email,
+        bio=None,
+        role=None,
+        password=None
+    ):
         user = self.model(
             username=username,
             email=self.normalize_email(email)
@@ -59,11 +65,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     """Чтобы определить кастомного пользователя определяем свой менеджер."""
 
     username = models.CharField(
-        max_length=255,
+        max_length=150,
         unique=True,
         verbose_name='Имя'
     )
     email = models.EmailField(
+        max_length=254,
         unique=True,
         verbose_name='email'
     )
@@ -79,7 +86,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     confirmation_code = models.CharField(
         max_length=20,
         default='0000',
-        verbose_name='Код'
+        verbose_name='Код',
+        blank=True,
+        null=True
     )
     role = models.CharField(
         max_length=16,
@@ -129,6 +138,14 @@ class Genre(models.Model):
         verbose_name = 'Жанр'
 
 
+class GenreTitle(models.Model):
+    genre = models.ForeignKey('Genre', on_delete=models.CASCADE)
+    title = models.ForeignKey('Title', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.title} {self.genre}'
+
+
 class Title(models.Model):
     name = models.CharField(max_length=256)
     category = models.ForeignKey(
@@ -140,6 +157,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         'Genre',
+        through='GenreTitle',
         related_name='titles',
         verbose_name='Жанр'
     )

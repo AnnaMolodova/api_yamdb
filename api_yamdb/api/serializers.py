@@ -53,6 +53,7 @@ class UserMeSerializer(serializers.ModelSerializer):
             'username', 'email', 'bio', 'role',
             'first_name', 'last_name'
         )
+        read_only_fields = ('role',)
 
 
 class TokenCodeSerializer(serializers.Serializer):
@@ -70,7 +71,7 @@ class CategorySerializer(ModelSerializer):
         fields = ('name', 'slug')
 
 
-class GengreSerializer(ModelSerializer):
+class GenreSerializer(ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -89,19 +90,12 @@ class TitleSerializer(ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'id',
-            'name',
-            'category',
-            'genre',
-            'description',
-            'year',
-            'rating'
-        )
+        fields = ('id', 'name', 'year', 'description',
+                  'genre', 'category', 'rating')
 
 
 class TitleReadSerializer(ModelSerializer):
-    genre = GengreSerializer(read_only=True, many=True)
+    genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
     rating = IntegerField(read_only=True, required=False)
 
@@ -113,8 +107,13 @@ class TitleReadSerializer(ModelSerializer):
             'category',
             'genre',
             'description',
-            'year'
+            'year',
+            'rating'
         )
+        read_only_fields = ("name", "year", "description", "genre", "category", 'rating')
+
+    def __str__(self):
+        return self.name
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -145,8 +144,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only=True,
         validators=[UniqueValidator(queryset=Comments.objects.all())]
     )
-    review = serializers.HiddenField(default=ReviewSerializer)
 
     class Meta:
         model = Comments
-        fields = ('id', 'text', 'author', 'pub_date', 'review')
+        fields = ('id', 'text', 'author', 'pub_date')
