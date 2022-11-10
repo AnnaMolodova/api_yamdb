@@ -6,10 +6,14 @@ from reviews.models import Category, Comments, Genre, Review, Title, User
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True,
-                                     validators=[UniqueValidator(queryset=User.objects.all()), ])
-    email = serializers.EmailField(required=True,
-                                   validators=[UniqueValidator(queryset=User.objects.all())])
+    username = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all()), ]
+    )
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
 
     class Meta:
         model = User
