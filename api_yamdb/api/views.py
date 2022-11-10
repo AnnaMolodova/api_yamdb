@@ -66,19 +66,20 @@ class UserViewSet(ModelViewSet):
 @permission_classes([AllowAny])
 def sign_up(request):
     serializer = RegistrationSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    username = serializer.validated_data['username']
-    email = serializer.validated_data['email']
-    user = User.objects.get_or_create(username=username, email=email)
-    user.confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        'Ваш код',
-        user.username,
-        user.confirmation_code,
-        settings.ADMIN_EMAIL,
-        [user.email]
-    )
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if serializer.is_valid(raise_exception=True):
+        user, _ = User.objects.get_or_create(
+            username=serializer.data['username'],
+            email = serializer.validated_data['email'])
+        user.confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            'Ваш код',
+            user.username,
+            user.confirmation_code,
+            [user.email],
+            fail_silently=False
+        )
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

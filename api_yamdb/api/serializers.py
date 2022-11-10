@@ -64,10 +64,6 @@ class TokenCodeSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
-    class Meta:
-        model = User
-        fields = ['username', 'confirmation_code']
-
 
 class CategorySerializer(ModelSerializer):
     id = serializers.IntegerField(write_only=True, required=False)
@@ -106,7 +102,7 @@ class TitleSerializer(ModelSerializer):
 class TitleReadSerializer(ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
-    rating = IntegerField(read_only=True, required=False)
+    rating = IntegerField(read_only=True, required=False, default=None)
 
     class Meta:
         model = Title
