@@ -40,6 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'bio', 'role',
             'first_name', 'last_name'
         )
+        lookup_field = 'username'
 
         def __str__(self):
             return self.username
