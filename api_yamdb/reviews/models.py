@@ -156,7 +156,6 @@ class Review(models.Model):
         (9, '9. Шикарно.'),
         (10, '10. Великолепно.')
     )
-    id = models.AutoField(primary_key=True)
     title = models.ForeignKey(
         Title,
         verbose_name='titles',
@@ -189,7 +188,6 @@ class Review(models.Model):
 
 
 class Comments(models.Model):
-    id = models.AutoField(primary_key=True)
     review = models.ForeignKey(
         Review,
         verbose_name='Дата публикации',
