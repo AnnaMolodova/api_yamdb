@@ -89,7 +89,6 @@ class Category(models.Model):
         return self.name
 
 
-
 class Genre(models.Model):
     name = models.CharField(
         'Название жанра',
