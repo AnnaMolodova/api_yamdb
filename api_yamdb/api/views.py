@@ -1,37 +1,28 @@
 from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework import filters, status
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework.decorators import action, api_view, permission_classes
-from django_filters.rest_framework import DjangoFilterBackend
+from django.core.mail import send_mail
 from django.db.models import Avg
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, filters
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import SearchFilter
-from rest_framework.mixins import (CreateModelMixin, ListModelMixin,
-                                   DestroyModelMixin)
-
-from .filters import TitleFilter
+from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
+                                   ListModelMixin)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Title, User
-from .serializers import (
-    RegistrationSerializer,
-    UserMeSerializer,
-    UserSerializer,
-    TokenCodeSerializer,
-    CategorySerializer,
-    GenreSerializer,
-    TitleReadSerializer,
-    TitleSerializer,
-    ReviewSerializer,
-    CommentSerializer
-)
-from api.permissions import (AuthorAdminReadOnly,
-                             CommentReviewPermission,
-                             IsAdminOrSuperuser, AdminUserOrReadOnly)
+
+from api.permissions import (AdminUserOrReadOnly, AuthorAdminReadOnly,
+                             CommentReviewPermission, IsAdminOrSuperuser)
+from .filters import TitleFilter
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, RegistrationSerializer,
+                          ReviewSerializer, TitleReadSerializer,
+                          TitleSerializer, TokenCodeSerializer,
+                          UserMeSerializer, UserSerializer)
 
 
 class UserViewSet(ModelViewSet):
@@ -48,10 +39,9 @@ class UserViewSet(ModelViewSet):
     )
     def me(self, request):
         serializer = UserMeSerializer(request.user)
-        userself = User.objects.get(username=self.request.user)
         if request.method == 'PATCH':
             serializer = UserMeSerializer(
-                userself,
+                request.user,
                 data=request.data,
                 partial=True
             )
@@ -59,7 +49,7 @@ class UserViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == 'GET':
-            serializer = self.get_serializer(userself)
+            serializer = self.get_serializer(request.user)
             return Response(serializer.data)
 
 
@@ -146,13 +136,11 @@ class ReviewViewSet(ModelViewSet):
     permission_classes = [CommentReviewPermission, ]
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
 

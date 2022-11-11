@@ -1,10 +1,12 @@
-from django.core.management.base import BaseCommand
+import glob
 
 import pandas as pd
-import glob
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
+    help = 'Loads data from csv into database'
+
     def handle(self, *args, **options):
         all_files = glob.glob('*.csv')
 
