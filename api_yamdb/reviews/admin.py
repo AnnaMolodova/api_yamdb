@@ -4,9 +4,6 @@ from django.contrib.auth.admin import UserAdmin
 from .models import Category, Comments, Genre, Review, Title, User
 
 
-admin.site.register(User, UserAdmin)
-
-
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     list_display = (
@@ -80,3 +77,6 @@ class CommentAdmin(admin.ModelAdmin):
     )
     list_filter = ('pub_date',)
     empty_value_display = '-пусто-'
+
+
+admin.site.register(User, UserAdmin)
