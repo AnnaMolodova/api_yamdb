@@ -1,7 +1,7 @@
-# API_yatube 
+# API_yamdb
 
 
-API_yautube - это API интерфейс предназначеный для развития функционала сайта.
+API_yamdb - это API интерфейс предназначеный для развития функционала сайта.
 
 - Type some Markdown on the left
 - See HTML in the right
